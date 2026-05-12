@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--w:#ffffff;--d:#050508;--g1:rgba(255,255,255,0.06);--g2:rgba(255,255,255,0.12);--g3:rgba(255,255,255,0.3)}
+html{scroll-behavior:smooth}
+body{background:var(--d);color:var(--w);font-family:'Barlow',sans-serif;overflow-x:hidden;cursor:none}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.cursor{position:fixed;width:10px;height:10px;background:#fff;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s,background .2s}
+.cring{position:fixed;width:34px;height:34px;border:1px solid rgba(255,255,255,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .14s ease}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:24px 56px;background:rgba(5,5,8,.7);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.04)}
+.logo{font-family:'Bebas Neue',cursive;font-size:38px;letter-spacing:8px;cursor:pointer;text-shadow:0 0 30px rgba(255,255,255,.3)}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{color:rgba(255,255,255,.5);text-decoration:none;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:color .25s}
+.nav-links a:hover{color:#fff}
+.nav-right{display:flex;align-items:center;gap:20px}
+.nav-cart{background:transparent;border:1px solid var(--g2);color:rgba(255,255,255,.6);padding:9px 22px;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .25s;font-family:'Barlow',sans-serif}
+.nav-cart:hover{border-color:rgba(255,255,255,.5);color:#fff;background:var(--g1)}
+
+/* PAGES */
+.page{position:relative;z-index:10;min-height:100vh;display:none}
+.page.active{display:block}
+
+/* ===== HERO ===== */
+#page-home{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:140px 40px 80px;min-height:100vh}
+.hero-tag{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;animation:fadeUp .9s .1s both}
+.hero-h{font-family:'Bebas Neue',cursive;line-height:.88;letter-spacing:6px;animation:fadeUp .9s .3s both}
+.hero-h .l1{font-size:clamp(90px,14vw,180px);display:block}
+.hero-h .l2{font-size:clamp(90px,14vw,180px);display:block;-webkit-text-stroke:1px rgba(255,255,255,.4);color:transparent}
+.hero-sub{font-size:12px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:28px;animation:fadeUp .9s .5s both}
+.hero-cta{margin-top:52px;display:flex;gap:16px;animation:fadeUp .9s .7s both}
+.btn-w{background:#fff;color:#000;padding:15px 44px;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-weight:700;border:none;font-family:'Barlow',sans-serif;transition:all .25s}
+.btn-w:hover{background:rgba(255,255,255,.85);transform:translateY(-2px)}
+.btn-o{background:transparent;color:#fff;padding:15px 44px;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border:1px solid rgba(255,255,255,.25);font-family:'Barlow',sans-serif;transition:all .25s}
+.btn-o:hover{border-color:rgba(255,255,255,.6)}
+.scroll-ind{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;animation:fadeUp .9s 1.1s both}
+.scroll-ind span{font-size:8px;letter-spacing:3px;color:rgba(255,255,255,.2);text-transform:uppercase}
+.scroll-ind i{width:1px;height:50px;background:linear-gradient(to bottom,rgba(255,255,255,.5),transparent);animation:spulse 2s infinite}
+
+/* MARQUEE */
+.marquee{border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);padding:20px 0;overflow:hidden;background:rgba(255,255,255,.015)}
+.mtrack{display:flex;gap:48px;width:max-content;animation:mar 18s linear infinite}
+.mitem{font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:4px;color:rgba(255,255,255,.2);white-space:nowrap}
+.mitem em{color:rgba(255,255,255,.55);font-style:normal}
+
+/* FEATURED STRIP */
+.feat{padding:100px 56px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:52px}
+.sec-num{font-size:10px;letter-spacing:4px;color:rgba(255,255,255,.2)}
+.sec-title{font-family:'Bebas Neue',cursive;font-size:clamp(36px,5vw,64px);letter-spacing:4px}
+.see-all{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.35);cursor:pointer;border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:3px;text-transform:uppercase;transition:all .25s}
+.see-all:hover{color:#fff;border-color:#fff}
+.feat-grid{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:2px}
+.fc{position:relative;overflow:hidden;cursor:pointer;background:#0b0b0e}
+.fc:first-child{grid-row:span 2}
+.fc-vis{transition:transform .55s ease}
+.fc:hover .fc-vis{transform:scale(1.04)}
+.fc-inner{width:100%;display:flex;align-items:center;justify-content:center;position:relative}
+.fc:first-child .fc-inner{height:540px}
+.fc .fc-inner{height:268px}
+.fc-badge{position:absolute;top:14px;left:14px;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;z-index:2}
+.b-new{background:#fff;color:#000}
+.b-ltd{background:rgba(110,60,220,.85);color:#fff}
+.b-sale{background:rgba(200,50,50,.85);color:#fff}
+.fc-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 100%);transform:translateY(6px);transition:transform .3s}
+.fc:hover .fc-overlay{transform:translateY(0)}
+.fc-name{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:2px}
+.fc-price{font-size:12px;color:rgba(255,255,255,.45);margin-top:3px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05)}
+.stat{padding:44px 36px;border-right:1px solid rgba(255,255,255,.05);text-align:center}
+.stat:last-child{border-right:none}
+.stat-n{font-family:'Bebas Neue',cursive;font-size:44px;color:rgba(255,255,255,.07)}
+.stat-l{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:6px}
+
+/* ABOUT */
+.about{padding:120px 56px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.ab-eye{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:20px}
+.ab-title{font-family:'Bebas Neue',cursive;font-size:clamp(32px,4vw,56px);letter-spacing:3px;line-height:1.1;margin-bottom:28px}
+.ab-body{font-size:14px;line-height:2;color:rgba(255,255,255,.4);font-weight:300}
+
+/* ===== SHOP ===== */
+#page-shop{padding:120px 56px 80px}
+.shop-hd{text-align:center;margin-bottom:48px}
+.shop-hd h2{font-family:'Bebas Neue',cursive;font-size:52px;letter-spacing:8px}
+.fbar{display:flex;justify-content:center;gap:8px;margin-bottom:44px;flex-wrap:wrap}
+.fb{background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.35);padding:8px 20px;font-size:9px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;font-family:'Barlow',sans-serif}
+.fb:hover,.fb.on{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.35);color:#fff}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.pc{position:relative;background:#0b0b0e;overflow:hidden;cursor:pointer}
+.pc:hover .pc-vis{transform:scale(1.03)}
+.pc-vis{transition:transform .5s ease}
+.pimg{width:100%;height:300px;display:flex;align-items:center;justify-content:center;position:relative}
+.pc-info{padding:18px 18px 0}
+.pc-cat{font-size:8px;letter-spacing:3px;color:rgba(255,255,255,.2);text-transform:uppercase;margin-bottom:5px}
+.pc-name{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:2px;margin-bottom:10px}
+.pc-bot{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.pc-price{font-size:13px;color:rgba(255,255,255,.5)}
+.pc-price .op{text-decoration:line-through;color:rgba(255,255,255,.2);font-size:11px;margin-right:6px}
+.sizes{display:flex;gap:3px}
+.sz{width:22px;height:22px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:7px;letter-spacing:0;color:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+.sz:hover{background:rgba(255,255,255,.12);color:#fff}
+.add-c{width:calc(100% - 36px);margin:0 18px 18px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);padding:10px;font-size:9px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .25s;font-family:'Barlow',sans-serif}
+.add-c:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.35);color:#fff}
+.wl{position:absolute;top:14px;right:14px;width:30px;height:30px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;z-index:3}
+.wl:hover{background:rgba(255,255,255,.12)}
+.wl svg{width:13px;height:13px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:1.5}
+
+/* ===== PRODUCT DETAIL ===== */
+#page-detail{padding:120px 56px 80px}
+.pd-back{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.3);text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px;margin-bottom:48px;transition:color .2s;border:none;background:transparent;font-family:'Barlow',sans-serif}
+.pd-back:hover{color:#fff}
+.pd-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.5;transition:transform .2s}
+.pd-back:hover svg{transform:translateX(-3px)}
+.pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-height:560px}
+.pd-imgs{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.pd-main-img{grid-column:span 2;background:#0d0d12;display:flex;align-items:center;justify-content:center;height:380px;position:relative;overflow:hidden}
+.pd-main-img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.04) 0%,transparent 70%)}
+.pd-thumb{background:#0b0b0e;display:flex;align-items:center;justify-content:center;height:130px;cursor:pointer;border:1px solid transparent;transition:border .2s}
+.pd-thumb.sel{border-color:rgba(255,255,255,.35)}
+.pd-info{background:#0c0c10;padding:48px 44px;display:flex;flex-direction:column;justify-content:center}
+.pd-brand{font-size:9px;letter-spacing:5px;color:rgba(255,255,255,.25);text-transform:uppercase;margin-bottom:12px}
+.pd-name{font-family:'Bebas Neue',cursive;font-size:clamp(36px,4vw,52px);letter-spacing:3px;line-height:1;margin-bottom:6px}
+.pd-tagline{font-size:13px;color:rgba(255,255,255,.35);margin-bottom:28px;font-weight:300}
+.pd-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:32px}
+.pd-price{font-family:'Bebas Neue',cursive;font-size:32px;letter-spacing:2px}
+.pd-old{font-size:16px;color:rgba(255,255,255,.25);text-decoration:line-through}
+.pd-save{font-size:11px;background:rgba(200,50,50,.15);color:rgba(255,120,100,.8);padding:3px 10px;letter-spacing:1px}
+.pd-sec{font-size:9px;letter-spacing:4px;color:rgba(255,255,255,.25);text-transform:uppercase;margin-bottom:12px}
+.pd-sizes{display:flex;gap:6px;margin-bottom:28px}
+.pd-sz{width:44px;height:44px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);font-size:11px;letter-spacing:1px;color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-family:'Barlow',sans-serif}
+.pd-sz:hover,.pd-sz.sel{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.5);color:#fff}
+.pd-colors{display:flex;gap:8px;margin-bottom:32px}
+.pd-col{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.pd-col.sel{border-color:#fff}
+.pd-actions{display:flex;gap:8px;margin-bottom:28px}
+.pd-add{flex:1;background:#fff;color:#000;padding:16px;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-weight:700;border:none;font-family:'Barlow',sans-serif;transition:all .25s}
+.pd-add:hover{background:rgba(255,255,255,.85)}
+.pd-wish{width:52px;background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+.pd-wish:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.pd-wish svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}
+.pd-features{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pd-feat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);padding:12px 14px}
+.pd-feat-l{font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.25);text-transform:uppercase;margin-bottom:3px}
+.pd-feat-v{font-size:12px;color:rgba(255,255,255,.6)}
+.pd-desc{padding:48px 56px;border-top:1px solid rgba(255,255,255,.05);display:grid;grid-template-columns:1fr 2fr;gap:60px}
+.pd-desc-label{font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:3px;color:rgba(255,255,255,.12)}
+.pd-desc-txt{font-size:14px;line-height:2;color:rgba(255,255,255,.4);font-weight:300}
+.pd-rel{padding:0 56px 80px}
+.pd-rel-hd{font-family:'Bebas Neue',cursive;font-size:32px;letter-spacing:5px;margin-bottom:28px;color:rgba(255,255,255,.5)}
+.rel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+
+/* FOOTER */
+footer{position:relative;z-index:10;padding:72px 56px 36px;border-top:1px solid rgba(255,255,255,.05)}
+.ft{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:72px}
+.ft-logo{font-family:'Bebas Neue',cursive;font-size:52px;letter-spacing:8px;color:rgba(255,255,255,.06)}
+.ft-cols{display:flex;gap:72px}
+.ft-col h5{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:18px}
+.ft-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ft-col a{font-size:12px;color:rgba(255,255,255,.4);text-decoration:none;cursor:pointer;transition:color .2s}
+.ft-col a:hover{color:#fff}
+.ft-bot{display:flex;justify-content:space-between;padding-top:28px;border-top:1px solid rgba(255,255,255,.04)}
+.ft-copy{font-size:10px;color:rgba(255,255,255,.15);letter-spacing:2px}
+
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes mar{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes spulse{0%,100%{opacity:.5}50%{opacity:.15}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes orbitR{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+</style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+<div class="cursor" id="cur"></div>
+<div class="cring" id="crg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goPage('home')">JNS</div>
+  <ul class="nav-links">
+    <li><a onclick="goPage('home')">Home</a></li>
+    <li><a onclick="goPage('shop')">Shop</a></li>
+    <li><a onclick="goPage('home')">Lookbook</a></li>
+    <li><a onclick="goPage('home')">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-cart" id="cart-btn">Cart (0)</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <section id="sec-hero" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:140px 40px 80px;position:relative">
+    <p class="hero-tag">Men's Collection — SS 2025</p>
+    <h1 class="hero-h"><span class="l1">JNS</span><span class="l2">BRAND</span></h1>
+    <p class="hero-sub">Dress Beyond the Ordinary · Style Beyond the Universe</p>
+    <div class="hero-cta">
+      <button class="btn-w" onclick="goPage('shop')">Shop Collection</button>
+      <button class="btn-o">Watch Film</button>
+    </div>
+    <div class="scroll-ind"><span>Scroll</span><i></i></div>
+  </section>
+
+  <div class="marquee"><div class="mtrack" id="mtr"></div></div>
+
+  <section class="feat">
+    <div class="sec-head">
+      <div><div class="sec-num">01 / COLLECTION</div><div class="sec-title">New Arrivals</div></div>
+      <span class="see-all" onclick="goPage('shop')">View All</span>
+    </div>
+    <div class="feat-grid" id="feat-grid"></div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Premium Cotton</div></div>
+    <div class="stat"><div class="stat-n">48H</div><div class="stat-l">Fast Delivery</div></div>
+    <div class="stat"><div class="stat-n">500+</div><div class="stat-l">Happy Clients</div></div>
+    <div class="stat"><div class="stat-n">30D</div><div class="stat-l">Free Returns</div></div>
+  </div>
+
+  <div class="about">
+    <div>
+      <div class="ab-eye">About JNS</div>
+      <div class="ab-title">Born From the Cosmos,<br>Built for Men</div>
+      <div class="ab-body">JNS is more than clothing — it's a statement. Every stitch crafted with purpose, every design born from the infinite inspiration of the universe. Premium menswear for men who think beyond limits.</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center">
+      <svg width="300" height="300" viewBox="0 0 300 300">
+        <circle cx="150" cy="150" r="148" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <circle cx="150" cy="150" r="110" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="3 7"/>
+        <circle cx="150" cy="150" r="72" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+        <text x="150" y="162" text-anchor="middle" font-family="'Bebas Neue',cursive" font-size="48" letter-spacing="8" fill="white" opacity=".9">JNS</text>
+        <g style="transform-origin:150px 150px;animation:orbit 7s linear infinite"><circle cx="150" cy="2" r="5" fill="rgba(140,90,255,.85)"/></g>
+        <g style="transform-origin:150px 150px;animation:orbitR 11s linear infinite"><circle cx="260" cy="150" r="4" fill="rgba(90,170,255,.75)"/></g>
+        <g style="transform-origin:150px 150px;animation:orbit 5s linear infinite"><circle cx="150" cy="78" r="3" fill="rgba(255,140,90,.75)"/></g>
+      </svg>
+    </div>
+  </div>
+
+  <footer>
+    <div class="ft">
+      <div class="ft-logo">JNS</div>
+      <div class="ft-cols">
+        <div class="ft-col"><h5>Shop</h5><ul><li><a onclick="goPage('shop')">New Arrivals</a></li><li><a onclick="goPage('shop')">T-Shirts</a></li><li><a onclick="goPage('shop')">Pants</a></li></ul></div>
+        <div class="ft-col"><h5>Brand</h5><ul><li><a>About</a></li><li><a>Lookbook</a></li><li><a>Stores</a></li></ul></div>
+        <div class="ft-col"><h5>Help</h5><ul><li><a>Size Guide</a></li><li><a>Shipping</a></li><li><a>Returns</a></li></ul></div>
+      </div>
+    </div>
+    <div class="ft-bot"><span class="ft-copy">© 2025 JNS Menswear</span><span class="ft-copy">Instagram · TikTok · WhatsApp</span></div>
+  </footer>
+</div>
+
+<!-- SHOP -->
+<div class="page" id="page-shop">
+  <div class="shop-hd"><h2>JNS STORE</h2><div style="width:50px;height:1px;background:rgba(255,255,255,.15);margin:16px auto 0"></div></div>
+  <div class="fbar" id="fbar"></div>
+  <div class="pgrid" id="pgrid"></div>
+  <footer style="margin-top:80px">
+    <div class="ft-bot"><span class="ft-copy">© 2025 JNS Menswear</span><span class="ft-copy">Instagram · TikTok · WhatsApp</span></div>
+  </footer>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="page-detail">
+  <button class="pd-back" id="pd-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Shop</button>
+  <div id="pd-content"></div>
+</div>
+
+<script>
+/* ---- DATA ---- */
+const products=[
+  {id:1,cat:'tshirt',name:'JNS Orbit Tee',price:750,badge:'new',bgc:'#131325',tagline:'Heavyweight oversized fit',sizes:['S','M','L','XL'],colors:['#1a1a2e','#2e1a1a','#1a2e1a'],material:'400GSM French Terry',fit:'Oversized',desc:'The Orbit Tee is our flagship heavyweight piece. Crafted from 400gsm French Terry cotton, it drapes with authority and holds its shape wash after wash. The subtle JNS chest embroidery marks you as part of something beyond ordinary.'},
+  {id:2,cat:'tshirt',name:'JNS Void Graphic',price:850,badge:'ltd',bgc:'#0d1117',tagline:'Limited edition front print',sizes:['M','L','XL'],colors:['#0d1117','#1a0d25'],material:'350GSM Cotton',fit:'Boxy',desc:'The Void Graphic is a wearable piece of art. A bold cosmic illustration printed on 350gsm cotton makes this a collector\'s item. Limited run of 200 pieces — once it\'s gone, it\'s gone.'},
+  {id:3,cat:'pants',name:'JNS Cosmos Cargo',price:1200,badge:'new',bgc:'#111118',tagline:'6-pocket tactical cut',sizes:['S','M','L','XL','XXL'],colors:['#111118','#1a1508'],material:'Ripstop Twill',fit:'Relaxed Tapered',desc:'Six functional pockets meet a refined silhouette in the Cosmos Cargo. Built from durable ripstop twill with subtle JNS branding on the back left pocket. The relaxed tapered cut keeps it clean without sacrificing comfort.'},
+  {id:4,cat:'tshirt',name:'JNS Galaxy Polo',price:920,badge:'',bgc:'#12121a',tagline:'Structured collar, slim fit',sizes:['S','M','L','XL'],colors:['#12121a','#1a1210','#0a1a12'],material:'Pique Cotton',fit:'Slim',desc:'The Galaxy Polo redefines smart casual. Structured pique cotton collar, mother-of-pearl buttons, and a slim cut that works from street to dinner. The embroidered JNS logo on the chest adds the final stamp of authenticity.'},
+  {id:5,cat:'pants',name:'JNS Nebula Jogger',price:980,oldPrice:1300,badge:'sale',bgc:'#0e0e16',tagline:'Tapered ankle, drawstring waist',sizes:['S','M','L','XL'],colors:['#0e0e16','#16100e'],material:'Fleece Back Jersey',fit:'Tapered',desc:'Premium fleece back jersey meets a tailored silhouette. The Nebula Jogger is engineered for comfort without compromise. Ribbed ankle cuffs, adjustable drawstring, and a bonded pocket system keep everything secure and sharp.'},
+  {id:6,cat:'tshirt',name:'JNS Signal Tee',price:680,badge:'',bgc:'#141414',tagline:'Clean minimal logo drop',sizes:['S','M','L','XL','XXL'],colors:['#141414','#1e1e1e','#0e1018'],material:'280GSM Cotton',fit:'Regular',desc:'Sometimes less is more. The Signal Tee features a clean minimalist JNS wordmark on 280gsm cotton. The perfect base layer that still makes a statement. Available in three colorways.'},
+  {id:7,cat:'pants',name:'JNS Dark Matter Slim',price:1400,badge:'new',bgc:'#0f0f1a',tagline:'Stretch twill, tapered leg',sizes:['S','M','L','XL'],colors:['#0f0f1a','#1a0f0a'],material:'Stretch Twill',fit:'Slim Tapered',desc:'Our most technical trouser. The Dark Matter Slim uses a 4-way stretch twill that moves with you while maintaining a clean sharp line. Hidden stretch waistband, zip fly, and bonded seams for a seamless finish.'},
+  {id:8,cat:'tshirt',name:'JNS Eclipse LS',price:890,oldPrice:1100,badge:'sale',bgc:'#131320',tagline:'Long sleeve, dropped shoulder',sizes:['M','L','XL'],colors:['#131320','#201310'],material:'320GSM Jersey',fit:'Oversized',desc:'The Eclipse Long Sleeve is a seasonal staple. Dropped shoulders, ribbed cuffs, and a slightly elongated hem create a modern silhouette. The tone-on-tone JNS sleeve print is subtle enough for everyday wear.'},
+  {id:9,cat:'pants',name:'JNS Pulsar Track',price:1050,badge:'ltd',bgc:'#10101a',tagline:'Side stripe, athletic cut',sizes:['S','M','L','XL','XXL'],colors:['#10101a','#0a1510'],material:'Tricot Polyester',fit:'Athletic',desc:'The Pulsar Track Pants bring old-school athletic energy into a modern context. Tricot polyester, embossed JNS side stripe, and an elastic waistband with drawstring. Built to perform, designed to be seen.'},
+];
+
+/* ---- GARMENT SVGs ---- */
+function teesvg(c,big){const h=big?360:big===false?120:200;return`<svg width="${big?260:big===false?80:160}" height="${h}" viewBox="0 0 160 ${h/1.6|0}" fill="none"><path d="M52 7L13 35L1 31L11 82L31 76L31 ${h/1.6-14|0}L129 ${h/1.6-14|0}L129 76L149 82L159 31L147 35L108 7Q94 20 80 20Q66 20 52 7Z" fill="${c}" stroke="rgba(255,255,255,.13)" stroke-width="1"/><path d="M52 7Q66 22 80 22Q94 22 108 7" stroke="rgba(255,255,255,.07)" fill="none" stroke-width=".8"/><text x="80" y="${h/1.6*0.58|0}" text-anchor="middle" font-family="'Bebas Neue',cursive" font-size="26" letter-spacing="4" fill="rgba(255,255,255,.9)">JNS</text><text x="80" y="${h/1.6*0.68|0}" text-anchor="middle" font-family="'Barlow',sans-serif" font-size="7" letter-spacing="3" fill="rgba(255,255,255,.22)">MENSWEAR</text></svg>`;}
+function pantsvg(c,big){const h=big?360:big===false?120:210;return`<svg width="${big?220:big===false?70:140}" height="${h}" viewBox="0 0 140 ${h/1.5|0}" fill="none"><path d="M9 0L0 7L0 78L50 78L50 ${h/1.5-6|0}L70 ${h/1.5-6|0}L70 78L70 78L70 ${h/1.5-6|0}L90 ${h/1.5-6|0}L90 78L140 78L140 7L131 0Z" fill="${c}" stroke="rgba(255,255,255,.13)" stroke-width="1"/><line x1="70" y1="0" x2="70" y2="78" stroke="rgba(255,255,255,.05)" stroke-width=".8"/><rect x="48" y="3" width="44" height="12" rx="2" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.09)" stroke-width=".8"/><text x="70" y="48" text-anchor="middle" font-family="'Bebas Neue',cursive" font-size="20" letter-spacing="3" fill="rgba(255,255,255,.85)">JNS</text><text x="70" y="60" text-anchor="middle" font-family="'Barlow',sans-serif" font-size="6" letter-spacing="2" fill="rgba(255,255,255,.2)">MENSWEAR</text></svg>`;}
+function pvisual(p,big,thumb){const fn=p.cat==='tshirt'?teesvg:pantsvg;return fn(p.colors[0],big,thumb);}
+
+/* ---- BADGE ---- */
+function badgeEl(b){if(!b)return'';const m={new:'b-new New',ltd:'b-ltd Limited',sale:'b-sale Sale'};return`<span class="fc-badge ${m[b]||''}"></span>`;}
+function pbadge(b){if(!b)return'';const m={new:'b-new New',ltd:'b-ltd Limited',sale:'b-sale Sale'};const[cls,lbl]=(m[b]||'').split(' ');return`<span class="fc-badge ${cls}" style="position:absolute;top:14px;left:14px;font-size:8px;letter-spacing:2px;padding:4px 10px;z-index:2">${lbl}</span>`;}
+
+/* ---- RENDER FEAT GRID ---- */
+function renderFeat(){
+  const g=document.getElementById('feat-grid');
+  const picks=[products[0],products[2],products[5],products[3],products[8]];
+  g.innerHTML=picks.map((p,i)=>`
+  <div class="fc" onclick="openDetail(${p.id})" style="background:${p.bgc}">
+    ${pbadge(p.badge)}
+    <div class="fc-vis"><div class="fc-inner">${pvisual(p,i===0,false)}</div></div>
+    <div class="fc-overlay"><div class="fc-name">${p.name}</div><div class="fc-price">EGP ${p.price.toLocaleString()}</div></div>
+  </div>`).join('');
+}
+
+/* ---- RENDER SHOP ---- */
+let curFilter='all';
+function renderShop(filter){
+  curFilter=filter||'all';
+  document.querySelectorAll('.fb').forEach(b=>{b.classList.toggle('on',b.dataset.f===curFilter)});
+  const list=products.filter(p=>{
+    if(curFilter==='all')return true;
+    if(curFilter==='tshirt'||curFilter==='pants')return p.cat===curFilter;
+    if(curFilter==='new')return p.badge==='new';
+    if(curFilter==='sale')return p.badge==='sale';
+    return true;
+  });
+  document.getElementById('pgrid').innerHTML=list.map(p=>`
+  <div class="pc" onclick="openDetail(${p.id})">
+    ${pbadge(p.badge)}
+    <div class="wl" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+    <div class="pc-vis"><div class="pimg" style="background:${p.bgc}">${pvisual(p,false,false)}</div></div>
+    <div class="pc-info">
+      <div class="pc-cat">${p.cat==='tshirt'?'T-Shirt':'Pants'} — JNS</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-bot">
+        <div class="pc-price">${p.oldPrice?`<span class="op">EGP ${p.oldPrice.toLocaleString()}</span>`:''}EGP ${p.price.toLocaleString()}</div>
+        <div class="sizes">${p.sizes.slice(0,4).map(s=>`<div class="sz">${s}</div>`).join('')}</div>
+      </div>
+    </div>
+    <button class="add-c" onclick="event.stopPropagation();addCart()">Add to Cart</button>
+  </div>`).join('');
+}
+
+function renderFbar(){
+  const filters=[['all','All'],['tshirt','T-Shirts'],['pants','Pants'],['new','New'],['sale','Sale']];
+  document.getElementById('fbar').innerHTML=filters.map(([f,l])=>`<button class="fb${f==='all'?' on':''}" data-f="${f}" onclick="renderShop('${f}')">${l}</button>`).join('');
+}
+
+/* ---- DETAIL ---- */
+let selSz={}, selCol={};
+function openDetail(id){
+  const p=products.find(x=>x.id===id);
+  if(!p)return;
+  selSz[id]=p.sizes[1]||p.sizes[0];
+  selCol[id]=0;
+  const colors=p.colors;
+  const related=products.filter(x=>x.id!==id&&x.cat===p.cat).slice(0,4);
+  document.getElementById('pd-content').innerHTML=`
+  <div class="pd-grid">
+    <div class="pd-imgs">
+      <div class="pd-main-img" id="pd-main">${pvisual(p,true,false)}</div>
+      ${colors.map((c,i)=>`<div class="pd-thumb${i===0?' sel':''}" onclick="selThumb(${id},${i},this)" style="background:${c}">${p.cat==='tshirt'?teesvg(c,false,true):pantsvg(c,false,true)}</div>`).join('')}
+    </div>
+    <div class="pd-info">
+      <div class="pd-brand">JNS — ${p.cat==='tshirt'?'T-Shirt':'Pants'}</div>
+      <div class="pd-name">${p.name}</div>
+      <div class="pd-tagline">${p.tagline}</div>
+      <div class="pd-price-row">
+        <div class="pd-price">EGP ${p.price.toLocaleString()}</div>
+        ${p.oldPrice?`<div class="pd-old">EGP ${p.oldPrice.toLocaleString()}</div><div class="pd-save">Save EGP ${(p.oldPrice-p.price).toLocaleString()}</div>`:''}
+      </div>
+      <div class="pd-sec" style="margin-bottom:8px">Color</div>
+      <div class="pd-colors" id="pd-cols">${colors.map((c,i)=>`<div class="pd-col${i===0?' sel':''}" style="background:${c};box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)" onclick="selColor(${id},${i},this,'${c}')"></div>`).join('')}</div>
+      <div class="pd-sec">Size</div>
+      <div class="pd-sizes" id="pd-szs">${p.sizes.map(s=>`<div class="pd-sz${s===selSz[id]?' sel':''}" onclick="selSize(${id},'${s}',this)">${s}</div>`).join('')}</div>
+      <div class="pd-actions">
+        <button class="pd-add" onclick="addCart()">Add to Cart</button>
+        <button class="pd-wish"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+      </div>
+      <div class="pd-features">
+        <div class="pd-feat"><div class="pd-feat-l">Material</div><div class="pd-feat-v">${p.material}</div></div>
+        <div class="pd-feat"><div class="pd-feat-l">Fit</div><div class="pd-feat-v">${p.fit}</div></div>
+        <div class="pd-feat"><div class="pd-feat-l">Delivery</div><div class="pd-feat-v">48H Express</div></div>
+        <div class="pd-feat"><div class="pd-feat-l">Returns</div><div class="pd-feat-v">30 Days Free</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="pd-desc"><div class="pd-desc-label">About This Piece</div><div class="pd-desc-txt">${p.desc}</div></div>
+  ${related.length?`<div class="pd-rel"><div class="pd-rel-hd">You May Also Like</div><div class="rel-grid">${related.map(r=>`<div class="pc" onclick="openDetail(${r.id})" style="cursor:pointer">
+    <div class="pc-vis"><div class="pimg" style="background:${r.bgc};height:200px">${pvisual(r,false,false)}</div></div>
+    <div class="pc-info"><div class="pc-name" style="font-size:16px">${r.name}</div><div class="pc-bot"><div class="pc-price">EGP ${r.price.toLocaleString()}</div></div></div>
+  </div>`).join('')}</div></div>`:''}
+  `;
+  document.getElementById('pd-back').onclick=()=>goPage('shop');
+  goPage('detail');
+  window.scrollTo(0,0);
+}
+
+function selThumb(id,i,el){
+  const p=products.find(x=>x.id===id);
+  document.querySelectorAll('.pd-thumb').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');
+  const main=document.getElementById('pd-main');
+  if(main) main.innerHTML=p.cat==='tshirt'?teesvg(p.colors[i],true):pantsvg(p.colors[i],true);
+}
+function selColor(id,i,el,c){
+  const p=products.find(x=>x.id===id);
+  document.querySelectorAll('.pd-col').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  const main=document.getElementById('pd-main');
+  if(main) main.innerHTML=p.cat==='tshirt'?teesvg(c,true):pantsvg(c,true);
+  const thumbs=document.querySelectorAll('.pd-thumb');
+  if(thumbs[i]){thumbs.forEach(t=>t.classList.remove('sel'));thumbs[i].classList.add('sel');}
+}
+function selSize(id,s,el){
+  selSz[id]=s;
+  document.querySelectorAll('.pd-sz').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+let cartCount=0;
+function addCart(){
+  cartCount++;
+  document.getElementById('cart-btn').textContent=`Cart (${cartCount})`;
+  const btn=document.getElementById('cart-btn');
+  btn.style.borderColor='rgba(255,255,255,.6)';btn.style.color='#fff';
+  setTimeout(()=>{btn.style.borderColor='';btn.style.color='';},600);
+}
+
+/* ---- PAGE NAV ---- */
+function goPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='shop')renderShop(curFilter);
+}
+
+/* ---- MARQUEE ---- */
+function buildMarquee(){
+  const items=['JNS <em>MENSWEAR</em>','★','NEW <em>COLLECTION</em>','★','BEYOND <em>THE UNIVERSE</em>','★','LIMITED <em>EDITION</em>','★'];
+  const full=[...items,...items];
+  document.getElementById('mtr').innerHTML=full.map(t=>`<span class="mitem">${t}</span>`).join('');
+}
+
+/* ---- SPACE CANVAS ---- */
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+let W,H,stars=[],shoots=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+resize();addEventListener('resize',resize);
+class Star{constructor(){this.reset();}reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*1.1+.2;this.a=Math.random();this.sp=Math.random()*.007+.002;this.ph=Math.random()*Math.PI*2;}draw(t){const a=(Math.sin(t*this.sp+this.ph)*.35+.65)*this.a;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill();}}
+class Shoot{constructor(){this.reset();}reset(){this.x=Math.random()*W*.7;this.y=Math.random()*H*.35;this.len=Math.random()*110+50;this.sp=Math.random()*5+4;this.a=1;const ang=Math.PI/5;this.vx=Math.cos(ang)*this.sp;this.vy=Math.sin(ang)*this.sp;this.active=false;this.timer=Math.random()*500;}update(){if(!this.active){this.timer--;if(this.timer<=0)this.active=true;return;}this.x+=this.vx;this.y+=this.vy;this.a-=.016;if(this.a<=0)this.reset();}draw(){if(!this.active)return;const tx=this.x-this.vx*(this.len/this.sp),ty=this.y-this.vy*(this.len/this.sp);const g=ctx.createLinearGradient(tx,ty,this.x,this.y);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,`rgba(255,255,255,${this.a})`);ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(this.x,this.y);ctx.strokeStyle=g;ctx.lineWidth=1.4;ctx.stroke();}}
+for(let i=0;i<200;i++)stars.push(new Star());
+for(let i=0;i<4;i++)shoots.push(new Shoot());
+function drawNeb(t){const x1=W*.74+Math.sin(t*.0003)*28,y1=H*.14+Math.cos(t*.0004)*18;const g1=ctx.createRadialGradient(x1,y1,0,x1,y1,260);g1.addColorStop(0,'rgba(80,30,160,.065)');g1.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);const x2=W*.14+Math.cos(t*.0002)*22,y2=H*.58+Math.sin(t*.0003)*18;const g2=ctx.createRadialGradient(x2,y2,0,x2,y2,200);g2.addColorStop(0,'rgba(10,60,120,.055)');g2.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);}
+let t=0;
+function anim(){ctx.clearRect(0,0,W,H);drawNeb(t);stars.forEach(s=>s.draw(t));shoots.forEach(s=>{s.update();s.draw();});t++;requestAnimationFrame(anim);}
+anim();
+addEventListener('scroll',()=>{cv.style.transform=`translateY(${scrollY*.28}px)`;});
+
+/* ---- CURSOR ---- */
+const cur=document.getElementById('cur'),crg=document.getElementById('crg');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;crg.style.left=rx+'px';crg.style.top=ry+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll && document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,.fc,.pc,.pd-sz,.pd-col,.pd-thumb,.see-all,.wl')){cur.style.transform='translate(-50%,-50%) scale(2.2)';cur.style.background='rgba(255,255,255,.3)';crg.style.transform='translate(-50%,-50%) scale(1.4)';}});
+document.addEventListener('mouseout',e=>{if(e.target.closest('a,button,.fc,.pc,.pd-sz,.pd-col,.pd-thumb,.see-all,.wl')){cur.style.transform='translate(-50%,-50%) scale(1)';cur.style.background='#fff';crg.style.transform='translate(-50%,-50%) scale(1)';}});
+
+/* ---- INIT ---- */
+buildMarquee();
+renderFeat();
+renderFbar();
+renderShop('all');
+</script>
+</body>
+</html>
